@@ -4,6 +4,7 @@
 #include "dependencyset.hpp"
 
 #include <iostream>
+#include <fstream>
 
 #include <rpm/rpmcli.h>
 #include <rpm/rpmdb.h>
@@ -22,6 +23,7 @@ using std::string;
 using std::cout;
 using std::cerr;
 using std::endl;
+using std::ofstream;
 using std::vector;
 using std::unordered_map;
 using std::unordered_set;
@@ -47,6 +49,8 @@ int main(int argc, char**argv)
   if( popt_context.context == NULL ) {
     exit(EXIT_FAILURE);
   }
+
+  bool verbose = rpmIsVerbose();
 
   sgug_rpm::progress_printer pprinter;
 
@@ -92,7 +96,7 @@ int main(int argc, char**argv)
     bool found_installed_package = false;
     for( const string & pkg : specfile.get_packages() ) {
       sgug_rpm::installedrpm foundrpm;
-      bool valid_rpm = sgug_rpm::read_installedrpm( pkg, foundrpm );
+      bool valid_rpm = sgug_rpm::read_installedrpm( verbose, pkg, foundrpm );
       if( valid_rpm ) {
 	found_installed_package = true;
       }
@@ -104,18 +108,29 @@ int main(int argc, char**argv)
   }
   pprinter.reset();
 
+  cout << "# Writing worldrebuilder.sh..." << endl;
+
   // Get everything in nice a->z order
   std::sort(specs_to_rebuild.begin(), specs_to_rebuild.end(),
 	    [](const sgug_rpm::specfile & a, const sgug_rpm::specfile & b ) -> bool {
 	      return a.get_name() < b.get_name();
 	    });
 
+  ofstream worldrebuilderfile;
+  worldrebuilderfile.open("worldrebuilder.sh");
+  worldrebuilderfile << "#!/usr/sgug/bin/bash" << endl;
+  worldrebuilderfile << "# This script should be run as your user!" << endl;
+  worldrebuilderfile << "mkdir -p ~/rpmbuild/PROGRESS" << endl;
+
   for( const sgug_rpm::specfile & spec : specs_to_rebuild ) {
     const string & name = spec.get_name();
-    cout << "# Must rebuild: " << name << endl;
-    cout << "rpmbuild -ba " << name << ".spec --nocheck" << endl;
-    cout << "touch ~/rpmbuild/PROGRESS/" << name << ".done" << endl;
+    worldrebuilderfile << "# Must rebuild: " << name << endl;
+    worldrebuilderfile << "rpmbuild -ba " << name << ".spec --nocheck" << endl;
+    worldrebuilderfile << "touch ~/rpmbuild/PROGRESS/" << name << ".done" <<
+      endl;
   }
+
+  worldrebuilderfile.close();
 
   return 0;
 }

@@ -37,4 +37,7 @@ program
 *.o
 *~
 src/sgug-rpm-tools/sgug_world_builder
+worldrebuilder.sh
 src/sgug-rpm-tools/sgug_minimal_computer
+leaveinstalled.txt
+removeexisting.sh

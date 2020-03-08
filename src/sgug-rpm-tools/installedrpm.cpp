@@ -36,7 +36,8 @@ namespace sgug_rpm {
       _requires(requires),
       _provides(provides) {}
 
-  bool read_installedrpm( const string & packagename, installedrpm & dest )
+  bool read_installedrpm( const bool verbose, const string & packagename,
+			  installedrpm & dest )
   {
     sgug_rpm::rpmts_h rpmts_helper;
 
@@ -54,8 +55,10 @@ namespace sgug_rpm {
       char * dep_rpmfile_c = headerFormat(installed_header, "%{NAME}-%{VERSION}-%{RELEASE}.%{ARCH}.rpm", &errstr);
       string packagerpmfile(dep_rpmfile_c);
 
-      cout << "# Checking deps of " << packagename <<
-	" rpm file is " << packagerpmfile << endl;
+      if( verbose ) {
+	cout << "# Checking deps of " << packagename <<
+	  " rpm file is " << packagerpmfile << endl;
+      }
 
       sgug_rpm::rpmds_h rpmds_prov(installed_header, RPMTAG_PROVIDENAME, 0);
 
@@ -127,13 +130,14 @@ namespace sgug_rpm {
     return found_installed_package;
   }
 
-  void read_installedrpms( const vector<string> & names,
+  void read_installedrpms( const bool verbose,
+			   const vector<string> & names,
 			   vector<installedrpm> & out_instrpms,
 			   vector<string> & error_instrpms )
   {
     for( const string & name : names ) {
       installedrpm one_instrpm;
-      if( read_installedrpm( name, one_instrpm ) ) {
+      if( read_installedrpm( verbose, name, one_instrpm ) ) {
 	out_instrpms.emplace_back( one_instrpm );
       }
       else {

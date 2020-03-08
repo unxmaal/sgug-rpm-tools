@@ -53,6 +53,8 @@ int main(int argc, char**argv)
     exit(EXIT_FAILURE);
   }
 
+  bool verbose = rpmIsVerbose();
+
   vector<string> spec_filenames;
 
   // Capture any explicit minimum rpms
@@ -124,7 +126,7 @@ int main(int argc, char**argv)
     size_t num_valid_rpms = 0;
     for( const string & pkg : specfile.get_packages() ) {
       sgug_rpm::installedrpm foundrpm;
-      bool valid_rpm = sgug_rpm::read_installedrpm( pkg, foundrpm );
+      bool valid_rpm = sgug_rpm::read_installedrpm( verbose, pkg, foundrpm );
       if( valid_rpm ) {
 	rpms_to_resolve.emplace_back(foundrpm);
       }
@@ -147,6 +149,8 @@ int main(int argc, char**argv)
       cout<< "#     " << uninstalled_rpm << endl;
     }
   }
+
+  cout << "# Computing minimal set..." << endl;
 
   unordered_set<string> special_packages;
   special_packages.emplace("rpm");
@@ -172,30 +176,39 @@ int main(int argc, char**argv)
 				     },
 				     pprinter );
 
-  uint32_t count = 0;
-  for( sgug_rpm::resolvedrpm & rrpm : resolved_rpms ) {
-    cout << "STATE: " << rrpm.get_package().get_name() << ":" <<
-      rrpm.get_sequence_no() << " " << count << " special: " <<
-      rrpm.get_special() <<endl;
-    count++;
-  }
-
-  count = 0;
-  for( sgug_rpm::resolvedrpm & rrpm : resolved_rpms ) {
-    if( rrpm.get_special() ) {
-      cout << "SPECIAL: " << rrpm.get_package().get_name() << ":" <<
+  if( verbose ) {
+    uint32_t count = 0;
+    for( sgug_rpm::resolvedrpm & rrpm : resolved_rpms ) {
+      cout << "STATE: " << rrpm.get_package().get_name() << ":" <<
 	rrpm.get_sequence_no() << " " << count << " special: " <<
-	rrpm.get_special() << " rpmfile: " <<
-	rrpm.get_package().get_rpmfile() << endl;
+	rrpm.get_special() <<endl;
       count++;
     }
+
+    count = 0;
+    for( sgug_rpm::resolvedrpm & rrpm : resolved_rpms ) {
+      if( rrpm.get_special() ) {
+	cout << "SPECIAL: " << rrpm.get_package().get_name() << ":" <<
+	  rrpm.get_sequence_no() << " " << count << " special: " <<
+	  rrpm.get_special() << " rpmfile: " <<
+	  rrpm.get_package().get_rpmfile() << endl;
+	count++;
+      }
+    }
   }
+
+  cout << "Writing leaveinstalled.txt and removeexisting.sh results." <<
+    endl;
 
   ofstream leaveinstalledfile;
   leaveinstalledfile.open("leaveinstalled.txt");
 
   ofstream removeexistingfile;
-  removeexistingfile.open("removeexisting.txt");
+  removeexistingfile.open("removeexisting.sh");
+  removeexistingfile << "#!/usr/sgug/bin/bash" << endl;
+  removeexistingfile << "# This script should be run under sudo!" << endl;
+  removeexistingfile << "# (and may not work properly due to perl circular " \
+    "dependencies)" << endl;
 
   // Leave installed we have in the order from least-deps to most-deps
   for( sgug_rpm::resolvedrpm & rrpm : resolved_rpms ) {
@@ -209,8 +222,11 @@ int main(int argc, char**argv)
   std::reverse(resolved_rpms.begin(), resolved_rpms.end());
   for( sgug_rpm::resolvedrpm & rrpm : resolved_rpms ) {
     if( !rrpm.get_special() ) {
-      removeexistingfile << rrpm.get_package().get_name() << " " <<
+      removeexistingfile << "# Should remove " <<
+	rrpm.get_package().get_name() << " " <<
 	rrpm.get_package().get_rpmfile() << endl;
+      removeexistingfile << "rpm -evh " << rrpm.get_package().get_name() <<
+	endl;
     }
   }
 

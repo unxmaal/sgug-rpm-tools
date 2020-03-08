@@ -28,9 +28,12 @@ namespace sgug_rpm {
     const std::vector<std::string> & get_provides() const { return _provides; };
   };
 
-  bool read_installedrpm( const std::string & packagename, installedrpm & dest );
+  bool read_installedrpm( const bool verbose,
+			  const std::string & packagename,
+			  installedrpm & dest );
 
-  void read_installedrpms( const std::vector<std::string> & names,
+  void read_installedrpms( const bool verbose,
+			   const std::vector<std::string> & names,
 			   std::vector<installedrpm> & out_instrpms,
 			   std::vector<std::string> & error_instrpms );
 }
