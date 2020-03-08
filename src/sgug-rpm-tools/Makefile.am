@@ -4,6 +4,11 @@ bin_PROGRAMS=sgug_world_builder \
 	sgug_minimal_computer
 
 sgug_world_builder_SOURCES=				\
+	dependencyset.hpp				\
+	helpers.hpp					\
+	installedrpm.hpp				\
+	sgug_dep_engine.hpp				\
+	specfile.hpp					\
 	sgug_world_builder.cpp				\
 	specfile.cpp					\
 	installedrpm.cpp				\
@@ -11,6 +16,11 @@ sgug_world_builder_SOURCES=				\
 	$(NULL)
 
 sgug_minimal_computer_SOURCES=				\
+	dependencyset.hpp				\
+	helpers.hpp					\
+	installedrpm.hpp				\
+	sgug_dep_engine.hpp				\
+	specfile.hpp					\
 	sgug_minimal_computer.cpp			\
 	specfile.cpp					\
 	installedrpm.cpp				\

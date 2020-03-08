@@ -36,5 +36,5 @@ program
 *.lo
 *.o
 *~
-src/sgug-rpm-toys/sgug_world_builder
-src/sgug-rpm-toys/sgug_minimal_computer
+src/sgug-rpm-tools/sgug_world_builder
+src/sgug-rpm-tools/sgug_minimal_computer
