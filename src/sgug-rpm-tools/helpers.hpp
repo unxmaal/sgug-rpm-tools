@@ -4,6 +4,7 @@
 #include <rpm/rpmcli.h>
 #include <rpm/rpmdb.h>
 #include <rpm/rpmts.h>
+#include <rpm/rpmlog.h>
 
 #include <string>
 #include <optional>
@@ -13,10 +14,12 @@ namespace sgug_rpm {
   class poptcontext_h {
   public:
     poptContext context;
+    bool verbose;
     
     poptcontext_h( int argc, char ** argv,
 		 struct poptOption optionsTable[]) {
       context = rpmcliInit(argc, argv, optionsTable);
+      verbose = rpmIsVerbose();
     }
 
     void reset_rpm_macros() {

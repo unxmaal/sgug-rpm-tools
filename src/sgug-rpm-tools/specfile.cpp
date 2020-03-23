@@ -64,11 +64,13 @@ namespace sgug_rpm {
       _packages(packages),
       _package_deps(package_deps) {}
 
-  bool read_specfile( const string & path, specfile & dest )
+  bool read_specfile( const string & path, specfile & dest,
+		      progress_printer & pprinter )
   {
     rpmSpecFlags flags;
     rpmspec_h spec_h( path.c_str(), flags, NULL );
     if( !spec_h.this_spec ) {
+      pprinter.reset();
       cerr << "Failed parsing spec: " << path << endl;
       return false;
     }
@@ -106,7 +108,7 @@ namespace sgug_rpm {
     for( const string & spec_filename : paths ) {
       specfile specfile;
       popt_context.reset_rpm_macros();
-      if( read_specfile(spec_filename, specfile) ) {
+      if( read_specfile(spec_filename, specfile, pprinter) ) {
 	out_specfiles.push_back( specfile );
       }
       else {

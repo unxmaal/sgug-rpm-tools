@@ -50,7 +50,7 @@ int main(int argc, char**argv)
     exit(EXIT_FAILURE);
   }
 
-  bool verbose = rpmIsVerbose();
+  bool verbose = popt_context.verbose;
 
   sgug_rpm::progress_printer pprinter;
 

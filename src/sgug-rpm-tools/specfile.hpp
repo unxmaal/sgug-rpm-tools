@@ -28,7 +28,8 @@ namespace sgug_rpm {
     const std::unordered_map<std::string,std::vector<std::string>> & get_package_deps() const { return _package_deps; };
   };
 
-  bool read_specfile( const std::string & path, specfile & dest );
+  bool read_specfile( const std::string & path, specfile & dest,
+		      sgug_rpm::progress_printer & pprinter );
 
   void read_specfiles( poptcontext_h & popt_context,
 		       const std::vector<std::string> & paths,

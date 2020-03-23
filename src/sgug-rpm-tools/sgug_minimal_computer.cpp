@@ -53,8 +53,6 @@ int main(int argc, char**argv)
     exit(EXIT_FAILURE);
   }
 
-  bool verbose = rpmIsVerbose();
-
   vector<string> spec_filenames;
 
   // Capture any explicit minimum rpms
@@ -62,6 +60,8 @@ int main(int argc, char**argv)
   for( fnp = poptGetArgs(popt_context.context); fnp && *fnp; ++fnp ) {
     spec_filenames.push_back(*fnp);    
   }
+
+  bool verbose = popt_context.verbose;
 
   sgug_rpm::progress_printer pprinter;
 
@@ -73,7 +73,7 @@ int main(int argc, char**argv)
       // Must reset rpm macros every time to be sure
       // no global are remembered
       popt_context.reset_rpm_macros();
-      if( sgug_rpm::read_specfile( spec_file, dest ) ) {
+      if( sgug_rpm::read_specfile( spec_file, dest, pprinter ) ) {
 	valid_specfiles.emplace_back(dest);
       }
       else {
@@ -156,6 +156,8 @@ int main(int argc, char**argv)
   special_packages.emplace("rpm");
   special_packages.emplace("sudo");
   special_packages.emplace("vim-minimal");
+  special_packages.emplace("sgug-rpm-tools");
+  special_packages.emplace("git-all");
   /*
   special_packages.emplace("rpm-build");
   special_packages.emplace("boost-devel");
