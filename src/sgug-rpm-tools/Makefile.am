@@ -29,16 +29,19 @@ sgug_minimal_computer_SOURCES=				\
 	$(NULL)
 
 AM_CFLAGS=						\
-	$(SGUG_RPM_TOYS_DEPS_CFLAGS)			\
+	$(DICL_DEPS_CFLAGS)				\
+	$(RPMTOOLS_DEPS_CFLAGS)				\
 	$(NULL)
 
 sgug_world_builder_LDADD=				\
-	$(SGUG_RPM_TOYS_DEPS_LIBS)			\
+	$(DICL_DEPS_LIBS)				\
+	$(RPMTOOLS_DEPS_LIBS)				\
 	-lrpmbuild					\
 	$(NULL)
 
 sgug_minimal_computer_LDADD=				\
-	$(SGUG_RPM_TOYS_DEPS_LIBS)			\
+	$(DICL_DEPS_LIBS)				\
+	$(RPMTOOLS_DEPS_LIBS)				\
 	-lrpmbuild					\
 	$(NULL)
 

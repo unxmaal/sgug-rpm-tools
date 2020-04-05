@@ -158,6 +158,11 @@ int main(int argc, char**argv)
   special_packages.emplace("vim-minimal");
   special_packages.emplace("sgug-rpm-tools");
   special_packages.emplace("git-all");
+  special_packages.emplace("tar");
+  special_packages.emplace("bzip2");
+  special_packages.emplace("gzip");
+  special_packages.emplace("xz");
+  special_packages.emplace("unzip");
   /*
   special_packages.emplace("rpm-build");
   special_packages.emplace("boost-devel");
