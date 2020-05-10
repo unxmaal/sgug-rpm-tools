@@ -7,45 +7,53 @@ _rpmlist=logs/rpmlist.txt
 _buildlog=logs/build.log
 _installed=logs/install.log
 _fcurl="http://fedora.mirrors.pair.com/linux/releases/31/Everything/source/tree/Packages/"
+_fcupdates="https://download-ib01.fedoraproject.org/pub/fedora/linux/updates/31/Everything/SRPMS/Packages/"
 
 getsrpm(){
-  if [[ -e "${_repodir}/packages/$i/SPECS/$i.spec" ]] ; then
+  if [[ -z "$_rebuild" ]] ; then
     local _version=$(grep 'Version:' "${_repodir}/packages/$i/SPECS/$i.spec" | awk '{print $2}')
     local _srpmname="${i}-${_version}"
   else
-    local _srpmname="${i}-"
+    local _version=$(grep 'Version:' "SPECS/$i.spec" | awk '{print $2}')
+    local _srpmname="${i}-${_version}"
   fi
 
-    if ! grep "$_srpmname" "$_rpmlist" ; then
-      echo "not found"
-      #get first letter
-      local _fl=${i:0:1}
-      #get the name of the rpm
-      local _rn=$(curl "${_fcurl}${_fl}/" | grep "$_srpmname" | grep src.rpm | cut -d '=' -f4| cut -d\" -f2) 
-      #get the url for the rpm
-      local _rl="$_fcurl/$_fl/$_rn"
-      #fetch the rpm
-      curl -o "SRPMS/$_rn" "$_rl"
-      #install the rpm
-      sudo rpm -Uvh "SRPMS/$_rn"
+  if ! grep "$_srpmname" "$_rpmlist" ; then
+    echo "not found"
+    #get first letter
+    local _fl=${i:0:1}
+
+    #get the name of the rpm
+    local _rn=$(curl "${_fcurl}${_fl}/" | grep "$_srpmname" | grep src.rpm | cut -d '=' -f4| cut -d\" -f2) 
+    if [[ -z "$_rn" ]] ; then
+        #try updates
+        local _rn=$(curl "${_fcupdates}${_fl}/" | grep "$_srpmname" | grep src.rpm | cut -d '=' -f4| cut -d\" -f2)
     fi
+    if [[ -z "$_rn" ]] ; then
+        echo "ERROR: Unable to download SRPM $_srpmname"
+        exit 1
+    fi
+    
+    #get the url for the rpm
+    local _rl="${_fcurl}${_fl}/$_rn"
+    #fetch the rpm
+    curl -o "SRPMS/$_rn" "$_rl"
+    #install the rpm
+    sudo rpm -Uvh "SRPMS/$_rn"
+  fi
 }
 
 newspecs(){
   if [[ -d "${_repodir}/packages/$i" ]] ; then
-echo "t1"
     cp ${_repodir}/packages/$i/SPECS/* SPECS/.
-echo "t2"
     if [[ -e "${_repodir}/packages/$i/SOURCES" ]] ; then
        cp ${_repodir}/packages/$i/SOURCES/* SOURCES/.
-echo "t3"
     fi
   fi
 }
 
-mkdir -p logs
-rpm -qa | sort > logs/rpmlist.txt
 
+main(){
 for i in $(cat $_list) ; do 
   getsrpm
   newspecs
@@ -67,3 +75,15 @@ for i in $(cat $_list) ; do
 	fi
   done
 done
+}
+
+#-----------
+mkdir -p logs
+rpm -qa | sort > logs/rpmlist.txt
+
+if [[ $1 == "rebuild" ]] ; then
+  _rebuild="1"
+fi
+
+main
+exit 
